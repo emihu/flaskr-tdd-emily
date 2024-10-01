@@ -1,7 +1,5 @@
-import sqlite3
 from pathlib import Path
-from flask import Flask, g, render_template, request, session, \
-                  flash, redirect, url_for, abort, jsonify
+from flask import Flask, render_template, request, session, flash, redirect, url_for, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from functools import wraps
 import os
@@ -29,6 +27,7 @@ db = SQLAlchemy(app)
 
 from project import models
 
+
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -38,11 +37,13 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+
 @app.route('/')
 def index():
     """Searches the database for entries, then displays them."""
     entries = db.session.query(models.Post)
     return render_template('index.html', entries=entries)
+
 
 @app.route('/add', methods=['POST'])
 def add_entry():
@@ -54,6 +55,7 @@ def add_entry():
     db.session.commit()
     flash('New entry was successfully posted')
     return redirect(url_for('index'))
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -70,12 +72,14 @@ def login():
             return redirect(url_for('index'))
     return render_template('login.html', error=error)
 
+
 @app.route('/logout')
 def logout():
     """User logout/authentication/session management."""
     session.pop('logged_in', None)
     flash('You were logged out')
     return redirect(url_for('index'))
+
 
 @app.route('/delete/<int:post_id>', methods=['GET'])
 @login_required
@@ -92,6 +96,7 @@ def delete_entry(post_id):
         result = {'status': 0, 'message': repr(e)}
     return jsonify(result)
 
+
 @app.route('/search', methods=['GET'])
 def search():
     query = request.args.get("query")
@@ -99,6 +104,7 @@ def search():
     if query:
         return render_template('search.html', entries=entries, query=query)
     return render_template('search.html')
+
 
 if __name__ == "__main__":
     app.run()
